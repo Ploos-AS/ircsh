@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ircsh"
+version = "0.0.0"
+description = "Purpose-built Unix shell for IRC shell accounts and IRC service hosting"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Ploos AS" }]
+
+[project.scripts]
+ircsh = "ircsh.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
