@@ -1,0 +1,3 @@
+[account]
+name = "example"
+capabilities = ["status.read", "quota.read", "services.read"]
