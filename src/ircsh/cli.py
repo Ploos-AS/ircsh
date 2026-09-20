@@ -41,7 +41,7 @@ Runtime backend: {s.runtime}
 Arbitrary OS command execution: disabled"""
 def cmd_services(ctx:Context)->str:
     lines=["SERVICE   STATE        AUTOSTART"]
-    lines.extend(f"{name:<9} unavailable  no" for name in ctx.services.read())
+    lines.extend(f"{info.name:<9} {info.state.value:<12} {'yes' if info.autostart else 'no'}" for info in ctx.services.read())
     return "\n".join(lines)
 def cmd_quota(ctx:Context)->str: return ctx.quota.read()
 def cmd_version(ctx:Context)->str: return f"ircsh {__version__}"
