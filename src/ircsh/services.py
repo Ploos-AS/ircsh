@@ -1,47 +1,65 @@
-"""M2 backend-neutral IRC service abstraction."""
+"""M2.1 backend-neutral IRC service taxonomy and multi-instance model."""
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from typing import Protocol
 
+class ServiceKind(str,Enum):
+    BOUNCER="bouncer"; BOT="bot"; CLIENT="client"
 class ServiceState(str,Enum):
     RUNNING="running"; STOPPED="stopped"; UNAVAILABLE="unavailable"; UNKNOWN="unknown"
 
 @dataclass(frozen=True,slots=True)
-class ServiceInfo:
+class ServiceId:
+    kind:ServiceKind
     name:str
+    def __post_init__(self):
+        if not self.name or not self.name.replace("-","").replace("_","").isalnum():
+            raise ValueError("service instance name must contain only letters, digits, '-' or '_'")
+
+@dataclass(frozen=True,slots=True)
+class ServiceInfo:
+    service_id:ServiceId
     state:ServiceState
     backend:str
     autostart:bool=False
+    @property
+    def name(self)->str:return self.service_id.name
+    @property
+    def kind(self)->ServiceKind:return self.service_id.kind
 
 class ServiceBackend(Protocol):
-    name:str
+    service_id:ServiceId
     def status(self)->ServiceInfo: ...
     def start(self)->ServiceInfo: ...
     def stop(self)->ServiceInfo: ...
     def restart(self)->ServiceInfo: ...
 
-class MutationDisabled(RuntimeError): pass
+class MutationDisabled(RuntimeError):pass
 
 class PlaceholderBackend:
-    """Safe adapter skeleton: reports state but cannot mutate the host yet."""
-    def __init__(self,name:str,backend:str):
-        self.name=name; self.backend=backend
-    def status(self)->ServiceInfo:
-        return ServiceInfo(self.name,ServiceState.UNAVAILABLE,self.backend)
-    def _deny(self)->ServiceInfo:
-        raise MutationDisabled(f"{self.name}: runtime mutation backend not configured")
+    def __init__(self,kind:ServiceKind,name:str,backend:str):
+        self.service_id=ServiceId(kind,name);self.backend=backend
+    @property
+    def name(self)->str:return self.service_id.name
+    def status(self)->ServiceInfo:return ServiceInfo(self.service_id,ServiceState.UNAVAILABLE,self.backend)
+    def _deny(self)->ServiceInfo:raise MutationDisabled(f"{self.name}: runtime mutation backend not configured")
     start=stop=restart=_deny
 
 class ServiceRegistry:
     def __init__(self,backends:tuple[ServiceBackend,...]|None=None):
-        self._items={b.name:b for b in (backends or (
-            PlaceholderBackend("soju","soju"),
-            PlaceholderBackend("znc","znc"),
-            PlaceholderBackend("eggdrop","placeholder"),
-            PlaceholderBackend("weechat","placeholder"),
-            PlaceholderBackend("irssi","placeholder"),
-        ))}
-    def names(self)->tuple[str,...]: return tuple(self._items)
-    def get(self,name:str)->ServiceBackend|None: return self._items.get(name)
-    def statuses(self)->tuple[ServiceInfo,...]: return tuple(x.status() for x in self._items.values())
+        defaults=(
+            PlaceholderBackend(ServiceKind.BOUNCER,"main","soju"),
+            PlaceholderBackend(ServiceKind.BOUNCER,"znc1","znc"),
+            PlaceholderBackend(ServiceKind.BOUNCER,"legacy","psybnc"),
+            PlaceholderBackend(ServiceKind.BOT,"eggdrop1","eggdrop"),
+            PlaceholderBackend(ServiceKind.CLIENT,"weechat","weechat"),
+            PlaceholderBackend(ServiceKind.CLIENT,"irssi","irssi"),
+        )
+        self._items={(b.service_id.kind,b.service_id.name):b for b in (backends or defaults)}
+    def get(self,name:str,kind:ServiceKind|None=None)->ServiceBackend|None:
+        if kind is not None:return self._items.get((kind,name))
+        matches=[b for (_,n),b in self._items.items() if n==name]
+        return matches[0] if len(matches)==1 else None
+    def statuses(self,kind:ServiceKind|None=None)->tuple[ServiceInfo,...]:
+        return tuple(b.status() for (k,_),b in self._items.items() if kind is None or k==kind)
