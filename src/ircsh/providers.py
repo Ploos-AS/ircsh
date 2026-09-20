@@ -1,6 +1,7 @@
-"""Read-only M1 provider interfaces and safe default implementations."""
+"""Read-only status/quota providers and M2 service provider."""
 from __future__ import annotations
 from dataclasses import dataclass
+from .services import ServiceInfo,ServiceRegistry
 
 @dataclass(frozen=True,slots=True)
 class Status:
@@ -14,5 +15,7 @@ class QuotaProvider:
     def read(self)->str: return "Quota backend: not configured (M1)"
 
 class ServiceProvider:
-    SERVICES=("soju","znc","eggdrop","weechat","irssi")
-    def read(self)->tuple[str,...]: return self.SERVICES
+    def __init__(self,registry:ServiceRegistry|None=None):
+        self.registry=registry or ServiceRegistry()
+    def read(self)->tuple[ServiceInfo,...]:
+        return self.registry.statuses()
