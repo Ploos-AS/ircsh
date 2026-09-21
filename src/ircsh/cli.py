@@ -21,8 +21,7 @@ class Context:
     service_config:ServiceConfigStore|None=None
     logs:JournalLogProvider|None=None
 
-def context()->Context:
-    runtime=TmuxSessionRuntime()\n    names=("weechat","irssi","bitchx")\n    sessions=tuple(ClientSession(n,runtime).session for n in names)\n    clients=tuple(ClientSession(n,runtime) for n in names)\n    return Context(load_config(),StatusProvider(),QuotaProvider(),ServiceProvider(),SessionProvider(sessions,clients),ServiceConfigStore(Path.home()/".ircsh"/"services"),JournalLogProvider())
+def context()->Context:\n    runtime=TmuxSessionRuntime()\n    names=("weechat","irssi","bitchx")\n    sessions=tuple(ClientSession(n,runtime).session for n in names)\n    clients=tuple(ClientSession(n,runtime) for n in names)\n    return Context(load_config(),StatusProvider(),QuotaProvider(),ServiceProvider(),SessionProvider(sessions,clients),ServiceConfigStore(Path.home()/".ircsh"/"services"),JournalLogProvider())
 
 def cmd_help(ctx:Context)->str:
     return """Available commands:
