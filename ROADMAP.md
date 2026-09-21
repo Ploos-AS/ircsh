@@ -29,7 +29,7 @@
 - Fail-closed mutation when no writable runtime is configured.
 - Integrated qualification on Python 3.11, 3.12 and 3.13.
 
-## M3 — Sessions, configuration and observability
+## M3 — Sessions, configuration and observability — PASS
 
 - Persistent terminal-session integration for IRC clients.
 - Controlled service configuration editing with schema/policy validation.
