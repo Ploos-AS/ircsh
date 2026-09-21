@@ -23,7 +23,7 @@ def cmd_help(ctx:Context)->str:
   account       Show account identity
   capabilities Show account capabilities
   status        Show account/session status
-  services      Show IRC services\n  bot list      List bot instances\n  bot status N  Show bot status\n  bouncer list  List bouncer instances\n  bouncer status N Show bouncer status
+  services      Show IRC services\n  bot list      List bot instances\n  bot status N  Show bot status\n  bouncer list  List bouncer instances\n  bouncer status N Show bouncer status\n  client list   List persistent IRC clients\n  client status N Show client status
   quota         Show quota status
   version       Show ircsh version
   exit          Leave ircsh
@@ -104,6 +104,24 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
             except (PermissionError,RuntimeError) as exc:return f"ircsh: bouncer operation denied: {exc}",False
             return f"{info.name} {info.state.value}",False
         return f"ircsh: invalid bouncer command: {command}",False
+    if parts and parts[0]=="client":
+        if len(parts)==2 and parts[1]=="list":
+            if not ctx.config.account.allows("clients.read"):return "ircsh: permission denied: clients.read",False
+            items=ctx.services.clients()
+            return "\n".join(f"{i.name} {i.backend} {i.state.value}" for i in items) or "(none)",False
+        if len(parts)==3 and parts[1]=="status":
+            if not ctx.config.account.allows("clients.read"):return "ircsh: permission denied: clients.read",False
+            item=ctx.services.client(parts[2])
+            if not item:return f"ircsh: client not found: {parts[2]}",False
+            info=item.status();return f"{info.name} {info.backend} {info.state.value}",False
+        if len(parts)==3 and parts[1] in {"start","stop","restart"}:
+            if not ctx.config.account.allows("clients.manage"):return "ircsh: permission denied: clients.manage",False
+            item=ctx.services.client(parts[2])
+            if not item:return f"ircsh: client not found: {parts[2]}",False
+            try: info=getattr(item,parts[1])()
+            except (PermissionError,RuntimeError) as exc:return f"ircsh: client operation denied: {exc}",False
+            return f"{info.name} {info.state.value}",False
+        return f"ircsh: invalid client command: {command}",False
     spec=COMMANDS.get(command)
     if spec is None:return f"ircsh: unknown command: {command}",False
     if spec.capability and not ctx.config.account.allows(spec.capability):
