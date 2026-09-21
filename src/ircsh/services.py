@@ -55,9 +55,15 @@ class ServiceRegistry:
             PlaceholderBackend(ServiceKind.BOUNCER,"muh1","muh"),
             PlaceholderBackend(ServiceKind.BOUNCER,"bip1","bip"),
             PlaceholderBackend(ServiceKind.BOUNCER,"pounce1","pounce"),
-            PlaceholderBackend(ServiceKind.BOT,"eggdrop1","eggdrop"),\n            PlaceholderBackend(ServiceKind.BOT,"limnoria1","limnoria"),\n            PlaceholderBackend(ServiceKind.BOT,"sopel1","sopel"),\n            PlaceholderBackend(ServiceKind.BOT,"errbot1","errbot"),\n            PlaceholderBackend(ServiceKind.BOT,"energymech1","energymech"),\n            PlaceholderBackend(ServiceKind.BOT,"psotnic1","psotnic"),
+            PlaceholderBackend(ServiceKind.BOT,"eggdrop1","eggdrop"),
+            PlaceholderBackend(ServiceKind.BOT,"limnoria1","limnoria"),
+            PlaceholderBackend(ServiceKind.BOT,"sopel1","sopel"),
+            PlaceholderBackend(ServiceKind.BOT,"errbot1","errbot"),
+            PlaceholderBackend(ServiceKind.BOT,"energymech1","energymech"),
+            PlaceholderBackend(ServiceKind.BOT,"psotnic1","psotnic"),
             PlaceholderBackend(ServiceKind.CLIENT,"weechat","weechat"),
-            PlaceholderBackend(ServiceKind.CLIENT,"irssi","irssi"),\n            PlaceholderBackend(ServiceKind.CLIENT,"bitchx","bitchx"),
+            PlaceholderBackend(ServiceKind.CLIENT,"irssi","irssi"),
+            PlaceholderBackend(ServiceKind.CLIENT,"bitchx","bitchx"),
         )
         self._items={(b.service_id.kind,b.service_id.name):b for b in (backends or defaults)}
     def get(self,name:str,kind:ServiceKind|None=None)->ServiceBackend|None:
