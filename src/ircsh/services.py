@@ -55,7 +55,7 @@ class ServiceRegistry:
             PlaceholderBackend(ServiceKind.BOUNCER,"muh1","muh"),
             PlaceholderBackend(ServiceKind.BOUNCER,"bip1","bip"),
             PlaceholderBackend(ServiceKind.BOUNCER,"pounce1","pounce"),
-            PlaceholderBackend(ServiceKind.BOT,"eggdrop1","eggdrop"),\n            PlaceholderBackend(ServiceKind.BOT,"limnoria1","limnoria"),\n            PlaceholderBackend(ServiceKind.BOT,"sopel1","sopel"),\n            PlaceholderBackend(ServiceKind.BOT,"errbot1","errbot"),
+            PlaceholderBackend(ServiceKind.BOT,"eggdrop1","eggdrop"),\n            PlaceholderBackend(ServiceKind.BOT,"limnoria1","limnoria"),\n            PlaceholderBackend(ServiceKind.BOT,"sopel1","sopel"),\n            PlaceholderBackend(ServiceKind.BOT,"errbot1","errbot"),\n            PlaceholderBackend(ServiceKind.BOT,"energymech1","energymech"),
             PlaceholderBackend(ServiceKind.CLIENT,"weechat","weechat"),
             PlaceholderBackend(ServiceKind.CLIENT,"irssi","irssi"),\n            PlaceholderBackend(ServiceKind.CLIENT,"bitchx","bitchx"),
         )
