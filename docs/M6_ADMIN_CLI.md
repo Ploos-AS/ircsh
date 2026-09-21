@@ -1,0 +1,1 @@
+# M6.4 administrative CLI\n\n`ircsh-admin` is a separate administrator-facing entry point and is not part of the restricted `ircsh` command registry. It supports account list/show/create/disable/enable/set-plan. Mutations update validated desired state only; privileged Unix reconciliation remains separate.\n
