@@ -1,0 +1,1 @@
+# M3 service configuration hardening\n\nExisting service configuration is now parsed with the same closed schema used for writes. Unknown keys, duplicate keys, malformed booleans, invalid strings and symlinked configuration files fail closed. The configuration root is rejected when it is a symlink and is normalized to mode `0700`; generated files remain `0600`.\n
