@@ -3,7 +3,7 @@ from __future__ import annotations
 import os,tomllib
 from dataclasses import dataclass
 from pathlib import Path
-from .model import Account,KNOWN_CAPABILITIES
+from .model import Account,KNOWN_CAPABILITIES\n\nDEFAULT_CAPABILITIES=frozenset({"status.read","quota.read","services.read"})
 
 class ConfigError(ValueError): pass
 
@@ -34,7 +34,7 @@ def load_config(system_path:Path|None=None,user_path:Path|None=None)->Config:
     unknown=set(account)-allowed
     if unknown: raise ConfigError(f"unknown account key: {sorted(unknown)[0]}")
     name=account.get("name") or os.environ.get("USER") or "unknown"
-    caps=account.get("capabilities",sorted(KNOWN_CAPABILITIES))
+    caps=account.get("capabilities",sorted(DEFAULT_CAPABILITIES))
     if not isinstance(name,str) or not name or any(c.isspace() for c in name):
         raise ConfigError("account.name must be a non-empty name without whitespace")
     if not isinstance(caps,list) or not all(isinstance(x,str) for x in caps):
