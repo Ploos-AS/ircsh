@@ -31,6 +31,19 @@ class ServiceConfigStore:
         if isinstance(value,str) and (not value or len(value)>64 or any(c in value for c in "\r\n\0")):
             raise ValueError("invalid configuration value")
 
+    def read(self,service:str)->dict[str,object]:
+        path=self._path(service)
+        if not path.exists():return {}
+        result={}
+        schema=SCHEMAS[service]
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if "=" not in line:continue
+            key,value=line.split("=",1)
+            expected=schema.get(key)
+            if expected is bool and value in {"true","false"}:result[key]=value=="true"
+            elif expected is str:result[key]=value
+        return result
+
     def set(self,service:str,key:str,value:object)->None:
         self.validate(service,key,value)
         path=self._path(service)
