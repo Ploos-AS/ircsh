@@ -51,4 +51,4 @@ class TmuxSessionRuntime:
         if argv not in allowed:raise ValueError("unsupported client executable")
         if self.state(target) is not SessionState.MISSING:
             raise RuntimeError("session already exists")
-        self._run(["tmux","new-session","-d","-s",target,"--",*argv],check=True)
+        self._run(["tmux","new-session","-d","-s",target,*argv],check=True)
