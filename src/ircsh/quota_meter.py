@@ -14,9 +14,9 @@ class QuotaMeter:
     def disk_mb(self)->int:
         total=0
         try:
-            for base,_,files in self._walk(self.root):
+            def walk_error(exc):raise QuotaMeasurementError("disk usage unavailable") from exc\n            try:iterator=self._walk(self.root,onerror=walk_error,followlinks=False)\n            except TypeError:iterator=self._walk(self.root)\n            for base,_,files in iterator:
                 for name in files:
-                    try:total+=(Path(base)/name).stat().st_size
+                    try:total+=(Path(base)/name).lstat().st_size
                     except FileNotFoundError:continue
         except OSError as exc:raise QuotaMeasurementError("disk usage unavailable") from exc
         return (total+(1024*1024-1))//(1024*1024)
