@@ -1,0 +1,1 @@
+# M6.7 drift-aware reconciliation\n\nReconciliation now derives existence and current Unix state through `HostInspector`; `--exists` is removed. Compliant accounts generate no action. Only drifted group, home or shell fields are normalized. Missing enabled accounts are created; disabled accounts already on `/usr/sbin/nologin` are idempotent. Dry-run remains the default.\n
