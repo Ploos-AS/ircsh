@@ -1,7 +1,7 @@
 """Read-only status/quota providers and M2 service provider."""
 from __future__ import annotations
 from dataclasses import dataclass
-from .services import ServiceInfo,ServiceRegistry
+from .services import ServiceInfo,ServiceKind,ServiceRegistry
 
 @dataclass(frozen=True,slots=True)
 class Status:
@@ -19,3 +19,5 @@ class ServiceProvider:
         self.registry=registry or ServiceRegistry()
     def read(self)->tuple[ServiceInfo,...]:
         return self.registry.statuses()
+    def bots(self)->tuple[ServiceInfo,...]: return self.registry.statuses(ServiceKind.BOT)
+    def bot(self,name:str): return self.registry.get(name,ServiceKind.BOT)
