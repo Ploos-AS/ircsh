@@ -6,6 +6,7 @@ from collections.abc import Callable
 from . import __version__
 from .config import Config,ConfigError,load_config
 from .providers import QuotaProvider,ServiceProvider,StatusProvider
+from .session_provider import SessionProvider
 
 @dataclass(frozen=True,slots=True)
 class Context:
@@ -13,9 +14,10 @@ class Context:
     status:StatusProvider
     quota:QuotaProvider
     services:ServiceProvider
+    sessions:SessionProvider|None=None
 
 def context()->Context:
-    return Context(load_config(),StatusProvider(),QuotaProvider(),ServiceProvider())
+    return Context(load_config(),StatusProvider(),QuotaProvider(),ServiceProvider(),SessionProvider())
 
 def cmd_help(ctx:Context)->str:
     return """Available commands:
@@ -24,6 +26,10 @@ def cmd_help(ctx:Context)->str:
   capabilities Show account capabilities
   status        Show account/session status
   services      Show IRC services\n  bot list      List bot instances\n  bot status N  Show bot status\n  bouncer list  List bouncer instances\n  bouncer status N Show bouncer status\n  client list   List persistent IRC clients\n  client status N Show client status
+  session list  List persistent sessions
+  session status N Show session status
+  session attach N Attach a permitted session
+  session detach N Detach a permitted session
   quota         Show quota status
   version       Show ircsh version
   exit          Leave ircsh
@@ -66,6 +72,24 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
     try: ctx=ctx or context()
     except ConfigError as exc:return f"ircsh: configuration error: {exc}",False
     parts=command.split()
+    if parts and parts[0]=="session":
+        sessions=ctx.sessions or SessionProvider()
+        if len(parts)==2 and parts[1]=="list":
+            if not ctx.config.account.allows("sessions.read"):return "ircsh: permission denied: sessions.read",False
+            return "\n".join(f"{i.name} {i.state.value}" for i in sessions.read()) or "(none)",False
+        if len(parts)==3 and parts[1]=="status":
+            if not ctx.config.account.allows("sessions.read"):return "ircsh: permission denied: sessions.read",False
+            item=sessions.get(parts[2])
+            if not item:return f"ircsh: session not found: {parts[2]}",False
+            info=item.status();return f"{info.name} {info.state.value}",False
+        if len(parts)==3 and parts[1] in {"attach","detach"}:
+            if not ctx.config.account.allows("sessions.manage"):return "ircsh: permission denied: sessions.manage",False
+            item=sessions.get(parts[2])
+            if not item:return f"ircsh: session not found: {parts[2]}",False
+            try:info=getattr(item,parts[1])()
+            except (PermissionError,RuntimeError) as exc:return f"ircsh: session operation denied: {exc}",False
+            return f"{info.name} {info.state.value}",False
+        return f"ircsh: invalid session command: {command}",False
     if parts and parts[0]=="bot":
         if len(parts)==2 and parts[1]=="list":
             if not ctx.config.account.allows("bots.read"):return "ircsh: permission denied: bots.read",False
