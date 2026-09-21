@@ -14,7 +14,10 @@ def execute(argv,store=None,runner=None,audit=None,inspector=None):
  if ns.action=="show":
   if ns.username not in accounts:raise KeyError(ns.username)
   a=accounts[ns.username];return f"username={a.username}\nplan={a.plan}\nenabled={'true' if a.enabled else 'false'}"
- if ns.action=="reconcile":\n  if ns.username not in accounts:raise KeyError(ns.username)\n  host=(inspector or HostInspector()).inspect(ns.username)\n  actions=AccountReconciler().plan(accounts[ns.username],host)\n  rendered="\\n".join(" ".join(a.argv) for a in actions) or "(no changes)"\n  if not ns.apply:return "DRY-RUN\\n"+rendered\n  if runner is None:raise RuntimeError("privileged runner unavailable")\n  audit=audit or AuditLogger()\n  for action in actions:\n   try:runner(list(action.argv),check=True)\n   except Exception as exc:\n    audit.emit(AuditEvent("account_reconcile",ns.username,"failed",type(exc).__name__));raise RuntimeError("reconciliation failed") from exc\n  audit.emit(AuditEvent("account_reconcile",ns.username,"allowed"));return "APPLIED\\n"+rendered\n if ns.action=="create":
+ if ns.action=="reconcile":\n  if ns.username not in accounts:raise KeyError(ns.username)\n  host=(inspector or HostInspector()).inspect(ns.username)\n  actions=AccountReconciler().plan(accounts[ns.username],host)\n  rendered="
+".join(" ".join(a.argv) for a in actions) or "(no changes)"\n  if not ns.apply:return "DRY-RUN
+"+rendered\n  if runner is None:raise RuntimeError("privileged runner unavailable")\n  audit=audit or AuditLogger()\n  for action in actions:\n   try:runner(list(action.argv),check=True)\n   except Exception as exc:\n    audit.emit(AuditEvent("account_reconcile",ns.username,"failed",type(exc).__name__));raise RuntimeError("reconciliation failed") from exc\n  audit.emit(AuditEvent("account_reconcile",ns.username,"allowed"));return "APPLIED
+"+rendered\n if ns.action=="create":
   if ns.username in accounts:raise ValueError("account already exists")
   store.put(ManagedAccount(ns.username,ns.plan));return f"created {ns.username}"
  if ns.username not in accounts:raise KeyError(ns.username)
