@@ -23,7 +23,7 @@ def cmd_help(ctx:Context)->str:
   account       Show account identity
   capabilities Show account capabilities
   status        Show account/session status
-  services      Show IRC service placeholders
+  services      Show IRC services\n  bot list      List bot instances\n  bot status N  Show bot status
   quota         Show quota status
   version       Show ircsh version
   exit          Leave ircsh
@@ -63,37 +63,31 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
     command=line.strip()
     if not command:return "",False
     if command in {"exit","quit"}:return "",True
-    spec=COMMANDS.get(command)
-    if spec is None:return f"ircsh: unknown command: {command}",False
     try: ctx=ctx or context()
     except ConfigError as exc:return f"ircsh: configuration error: {exc}",False
+    parts=command.split()
+    if parts and parts[0]=="bot":
+        if len(parts)==2 and parts[1]=="list":
+            if not ctx.config.account.allows("bots.read"):return "ircsh: permission denied: bots.read",False
+            bots=ctx.services.bots()
+            return "\n".join(f"{b.name} {b.backend} {b.state.value}" for b in bots) or "(none)",False
+        if len(parts)==3 and parts[1]=="status":
+            if not ctx.config.account.allows("bots.read"):return "ircsh: permission denied: bots.read",False
+            bot=ctx.services.bot(parts[2])
+            if not bot:return f"ircsh: bot not found: {parts[2]}",False
+            info=bot.status()
+            return f"{info.name} {info.backend} {info.state.value}",False
+        if len(parts)==3 and parts[1] in {"start","stop","restart"}:
+            if not ctx.config.account.allows("bots.manage"):return "ircsh: permission denied: bots.manage",False
+            bot=ctx.services.bot(parts[2])
+            if not bot:return f"ircsh: bot not found: {parts[2]}",False
+            try: info=getattr(bot,parts[1])()
+            except (PermissionError,RuntimeError) as exc:return f"ircsh: bot operation denied: {exc}",False
+            return f"{info.name} {info.state.value}",False
+        return f"ircsh: invalid bot command: {command}",False
+    spec=COMMANDS.get(command)
+    if spec is None:return f"ircsh: unknown command: {command}",False
     if spec.capability and not ctx.config.account.allows(spec.capability):
         return f"ircsh: permission denied: {spec.capability}",False
     return spec.handler(ctx),False
 
-def interactive()->int:
-    try: ctx=context()
-    except ConfigError as exc:
-        print(f"ircsh: configuration error: {exc}"); return 2
-    print(f"ircsh {__version__}")
-    print(f"Account: {ctx.config.account.name}")
-    print("Purpose-built IRC shell environment")
-    print("Type 'help' for available commands.\n")
-    while True:
-        try: line=input("ircsh> ")
-        except (EOFError,KeyboardInterrupt):
-            print(); return 0
-        output,should_exit=execute(line,ctx)
-        if output:print(output)
-        if should_exit:return 0
-
-def main(argv:list[str]|None=None)->int:
-    parser=argparse.ArgumentParser(prog="ircsh")
-    parser.add_argument("--command","-c",help="run one ircsh built-in command and exit")
-    args=parser.parse_args(argv)
-    if args.command is None:return interactive()
-    output,_=execute(args.command)
-    if output:print(output)
-    return 2 if output.startswith(("ircsh: unknown command:","ircsh: configuration error:","ircsh: permission denied:")) else 0
-
-if __name__=="__main__": raise SystemExit(main())
