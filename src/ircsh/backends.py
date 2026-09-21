@@ -109,3 +109,17 @@ class EggdropBackend:
     def start(self)->ServiceInfo:self.runtime.start(self.unit);return self.status()
     def stop(self)->ServiceInfo:self.runtime.stop(self.unit);return self.status()
     def restart(self)->ServiceInfo:self.runtime.restart(self.unit);return self.status()
+
+class PersistentClientBackend:
+    """Validated multi-instance persistent IRC client runtime adapter."""
+    def __init__(self,name:str,runtime:Runtime,backend:str):
+        if backend not in {"weechat","irssi"}:raise ValueError("unsupported IRC client backend")
+        self.service_id=ServiceId(ServiceKind.CLIENT,name);self.runtime=runtime;self.backend=backend
+        self.unit=f"ircsh-{backend}-{name}.service"
+    def status(self)->ServiceInfo:
+        state={RuntimeState.ACTIVE:ServiceState.RUNNING,RuntimeState.INACTIVE:ServiceState.STOPPED,
+               RuntimeState.MISSING:ServiceState.UNAVAILABLE}.get(self.runtime.state(self.unit),ServiceState.UNKNOWN)
+        return ServiceInfo(self.service_id,state,self.backend)
+    def start(self)->ServiceInfo:self.runtime.start(self.unit);return self.status()
+    def stop(self)->ServiceInfo:self.runtime.stop(self.unit);return self.status()
+    def restart(self)->ServiceInfo:self.runtime.restart(self.unit);return self.status()
