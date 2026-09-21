@@ -5,7 +5,7 @@ from pathlib import Path
 class ConnectionMeasurementError(RuntimeError):pass
 
 class ProcConnectionMeter:
-    """Count established TCP sockets owned by a trusted account UID."""
+    """Count active TCP sockets owned by a trusted account UID."""
     def __init__(self,uid:int,proc:Path=Path("/proc")):
         if type(uid) is not int or uid<0:raise ValueError("uid must be a non-negative integer")
         if not proc.is_absolute():raise ValueError("proc root must be absolute")
