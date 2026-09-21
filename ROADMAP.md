@@ -1,6 +1,6 @@
 # ircsh roadmap
 
-## M0 — Foundation
+## M0 — Foundation — PASS
 
 - Define scope and security boundary.
 - Establish repository structure and license.
@@ -9,7 +9,7 @@
 - Reject arbitrary operating-system commands.
 - Add architecture, threat-model, qualification documentation, and CI.
 
-## M1 — Account and configuration model
+## M1 — Account and configuration model — PASS
 
 - System and per-user configuration.
 - Account identity and capability model.
@@ -17,20 +17,25 @@
 - Structured output/error model.
 - Configuration validation.
 
-## M2 — Service abstraction
+## M2 — Service abstraction — PASS
 
-- Backend-neutral service API.
-- Lifecycle/status operations.
-- soju and ZNC adapters.
-- Log access with policy enforcement.
-- Explicit per-account service permissions.
+- Backend-neutral, typed, multi-instance service API.
+- Read/status and capability-gated lifecycle operations.
+- Bouncers: soju, ZNC, psyBNC, muh, BIP, pounce.
+- Bots: Eggdrop, Limnoria, Sopel, Errbot, EnergyMech, Psotnic.
+- Persistent clients: WeeChat, Irssi, BitchX.
+- Deterministic runtime targets; no account-selected units or commands.
+- Separate read/manage capabilities with read-only defaults.
+- Fail-closed mutation when no writable runtime is configured.
+- Integrated qualification on Python 3.11, 3.12 and 3.13.
 
-## M3 — IRC clients and bots
+## M3 — Sessions, configuration and observability
 
-- Irssi and WeeChat session launching.
-- Eggdrop/bot lifecycle abstraction.
-- Persistent terminal-session integration.
-- Controlled configuration editing.
+- Persistent terminal-session integration for IRC clients.
+- Controlled service configuration editing with schema/policy validation.
+- Read-only service log access with policy enforcement.
+- Session attach/detach/status abstraction without generic shell escape.
+- Qualification for session/config/log security boundaries.
 
 ## M4 — Isolation and quotas
 
@@ -55,7 +60,7 @@
 
 ## Later
 
-- Additional IRC bouncers and bots.
+- Additional IRC bouncers, bots and clients.
 - Optional web administration.
 - Multi-host scheduling.
 - Backup/restore tooling.
