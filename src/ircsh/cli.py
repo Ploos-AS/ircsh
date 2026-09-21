@@ -23,7 +23,7 @@ def cmd_help(ctx:Context)->str:
   account       Show account identity
   capabilities Show account capabilities
   status        Show account/session status
-  services      Show IRC services\n  bot list      List bot instances\n  bot status N  Show bot status
+  services      Show IRC services\n  bot list      List bot instances\n  bot status N  Show bot status\n  bouncer list  List bouncer instances\n  bouncer status N Show bouncer status
   quota         Show quota status
   version       Show ircsh version
   exit          Leave ircsh
@@ -85,6 +85,25 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
             except (PermissionError,RuntimeError) as exc:return f"ircsh: bot operation denied: {exc}",False
             return f"{info.name} {info.state.value}",False
         return f"ircsh: invalid bot command: {command}",False
+    if parts and parts[0]=="bouncer":
+        if len(parts)==2 and parts[1]=="list":
+            if not ctx.config.account.allows("bouncers.read"):return "ircsh: permission denied: bouncers.read",False
+            items=ctx.services.bouncers()
+            return "\n".join(f"{b.name} {b.backend} {b.state.value}" for b in items) or "(none)",False
+        if len(parts)==3 and parts[1]=="status":
+            if not ctx.config.account.allows("bouncers.read"):return "ircsh: permission denied: bouncers.read",False
+            item=ctx.services.bouncer(parts[2])
+            if not item:return f"ircsh: bouncer not found: {parts[2]}",False
+            info=item.status()
+            return f"{info.name} {info.backend} {info.state.value}",False
+        if len(parts)==3 and parts[1] in {"start","stop","restart"}:
+            if not ctx.config.account.allows("bouncers.manage"):return "ircsh: permission denied: bouncers.manage",False
+            item=ctx.services.bouncer(parts[2])
+            if not item:return f"ircsh: bouncer not found: {parts[2]}",False
+            try: info=getattr(item,parts[1])()
+            except (PermissionError,RuntimeError) as exc:return f"ircsh: bouncer operation denied: {exc}",False
+            return f"{info.name} {info.state.value}",False
+        return f"ircsh: invalid bouncer command: {command}",False
     spec=COMMANDS.get(command)
     if spec is None:return f"ircsh: unknown command: {command}",False
     if spec.capability and not ctx.config.account.allows(spec.capability):
