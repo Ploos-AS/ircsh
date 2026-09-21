@@ -21,7 +21,7 @@ def shell_entry(executable:str="/usr/bin/ircsh")->str:
 
 def authorized_key_options(username:str,policy:SshPolicy=DEFAULT_SSH_POLICY)->str:
     if not _USER.fullmatch(username):raise ValueError("invalid account name")
-    options=[]
+    options=["no-user-rc"]
     if not policy.allow_agent_forwarding:options.append("no-agent-forwarding")
     if not policy.allow_tcp_forwarding:options.append("no-port-forwarding")
     if not policy.allow_x11_forwarding:options.append("no-X11-forwarding")
