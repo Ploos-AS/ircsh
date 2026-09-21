@@ -26,4 +26,4 @@ Run:
 CI additionally smoke-tests the installed CLI and verifies that arbitrary OS
 commands remain rejected.
 
-**Result: pending CI.**
+**Result: PASS.** GitHub Actions CI #112 passed the complete suite on Python 3.11, 3.12 and 3.13.
