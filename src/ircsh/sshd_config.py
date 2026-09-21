@@ -13,6 +13,6 @@ def render_match_group(group:str="ircsh",policy:SshPolicy=DEFAULT_SSH_POLICY)->s
         f"    AllowAgentForwarding {yesno(policy.allow_agent_forwarding)}",
         f"    X11Forwarding {yesno(policy.allow_x11_forwarding)}",
         f"    PermitTTY {yesno(policy.permit_tty)}",
-        f"    PermitUserEnvironment {yesno(policy.permit_user_environment)}",
+        f"    PermitUserEnvironment {yesno(policy.permit_user_environment)}",\n        "    PermitUserRC no",
     ]
     return "\n".join(lines)+"\n"
