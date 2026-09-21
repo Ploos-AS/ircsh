@@ -8,6 +8,7 @@ from .config import Config,ConfigError,load_config
 from .providers import QuotaProvider,ServiceProvider,StatusProvider
 from .session_provider import SessionProvider
 from .service_config import ServiceConfigStore
+from .logs import JournalLogProvider
 from pathlib import Path
 
 @dataclass(frozen=True,slots=True)
@@ -18,9 +19,10 @@ class Context:
     services:ServiceProvider
     sessions:SessionProvider|None=None
     service_config:ServiceConfigStore|None=None
+    logs:JournalLogProvider|None=None
 
 def context()->Context:
-    return Context(load_config(),StatusProvider(),QuotaProvider(),ServiceProvider(),SessionProvider(),ServiceConfigStore(Path.home()/".ircsh"/"services"))
+    return Context(load_config(),StatusProvider(),QuotaProvider(),ServiceProvider(),SessionProvider(),ServiceConfigStore(Path.home()/".ircsh"/"services"),JournalLogProvider())
 
 def cmd_help(ctx:Context)->str:
     return """Available commands:
@@ -36,6 +38,7 @@ def cmd_help(ctx:Context)->str:
   session detach N Detach a permitted session
   config show S Show allowlisted service configuration
   config set S K V Set an allowlisted service configuration value
+  logs S [N]    Show up to 200 lines from an allowlisted service log
   quota         Show quota status
   version       Show ircsh version
   exit          Leave ircsh
@@ -78,6 +81,15 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
     try: ctx=ctx or context()
     except ConfigError as exc:return f"ircsh: configuration error: {exc}",False
     parts=command.split()
+    if parts and parts[0]=="logs":
+        if not ctx.config.account.allows("logs.read"):return "ircsh: permission denied: logs.read",False
+        if len(parts) not in {2,3}:return f"ircsh: invalid logs command: {command}",False
+        try:
+            lines=50 if len(parts)==2 else int(parts[2])
+            provider=ctx.logs or JournalLogProvider()
+            output=provider.read(parts[1],lines)
+        except (ValueError,RuntimeError) as exc:return f"ircsh: log operation denied: {exc}",False
+        return output or "(empty)",False
     if parts and parts[0]=="config":
         store=ctx.service_config
         if store is None:return "ircsh: configuration store unavailable",False
