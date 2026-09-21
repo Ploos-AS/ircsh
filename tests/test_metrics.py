@@ -1,0 +1,1 @@
+import unittest\nfrom ircsh.health import HealthSnapshot\nfrom ircsh.metrics import render_prometheus\nclass T(unittest.TestCase):\n def test_metrics(self):\n  x=render_prometheus(HealthSnapshot(True,2,1,1,0,0));self.assertIn("ircsh_health_ok 1",x);self.assertIn("ircsh_accounts_total 2",x)\n
