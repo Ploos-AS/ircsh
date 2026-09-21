@@ -6,7 +6,7 @@ from collections.abc import Callable
 from . import __version__
 from .config import Config,ConfigError,load_config
 from .providers import QuotaProvider,ServiceProvider,StatusProvider
-from .session_provider import SessionProvider
+from .session_provider import SessionProvider\nfrom .tmux_runtime import TmuxSessionRuntime\nfrom .client_sessions import ClientSession
 from .service_config import ServiceConfigStore
 from .logs import JournalLogProvider
 from pathlib import Path
@@ -22,7 +22,7 @@ class Context:
     logs:JournalLogProvider|None=None
 
 def context()->Context:
-    return Context(load_config(),StatusProvider(),QuotaProvider(),ServiceProvider(),SessionProvider(),ServiceConfigStore(Path.home()/".ircsh"/"services"),JournalLogProvider())
+    runtime=TmuxSessionRuntime()\n    names=("weechat","irssi","bitchx")\n    sessions=tuple(ClientSession(n,runtime).session for n in names)\n    clients=tuple(ClientSession(n,runtime) for n in names)\n    return Context(load_config(),StatusProvider(),QuotaProvider(),ServiceProvider(),SessionProvider(sessions,clients),ServiceConfigStore(Path.home()/".ircsh"/"services"),JournalLogProvider())
 
 def cmd_help(ctx:Context)->str:
     return """Available commands:
