@@ -20,4 +20,4 @@ class ServiceProvider:
     def read(self)->tuple[ServiceInfo,...]:
         return self.registry.statuses()
     def bots(self)->tuple[ServiceInfo,...]: return self.registry.statuses(ServiceKind.BOT)
-    def bot(self,name:str): return self.registry.get(name,ServiceKind.BOT)
+    def bot(self,name:str): return self.registry.get(name,ServiceKind.BOT)\n    def bouncers(self)->tuple[ServiceInfo,...]: return self.registry.statuses(ServiceKind.BOUNCER)\n    def bouncer(self,name:str): return self.registry.get(name,ServiceKind.BOUNCER)
