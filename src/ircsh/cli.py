@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from collections.abc import Callable
 from . import __version__
 from .config import Config,ConfigError,load_config
-from .providers import QuotaProvider,ServiceProvider,StatusProvider
+from .providers import QuotaProvider,ServiceProvider,StatusProvider,production_registry\nfrom .systemd_runtime import SystemdUserRuntime\nfrom .quota_runtime import QuotaRuntime\nfrom .quota_meter import QuotaMeter\nfrom .connection_meter import ProcConnectionMeter\nfrom .quotas import QuotaEnforcer\nfrom .isolation import DEFAULT_POLICY\nfrom .audit import AuditLogger\nfrom .host_inspector import HostInspector
 from .session_provider import SessionProvider\nfrom .tmux_runtime import TmuxSessionRuntime\nfrom .client_sessions import ClientSession
 from .service_config import ServiceConfigStore
 from .logs import JournalLogProvider
@@ -21,7 +21,7 @@ class Context:
     service_config:ServiceConfigStore|None=None
     logs:JournalLogProvider|None=None
 
-def context()->Context:\n    runtime=TmuxSessionRuntime()\n    names=("weechat","irssi","bitchx")\n    sessions=tuple(ClientSession(n,runtime).session for n in names)\n    clients=tuple(ClientSession(n,runtime) for n in names)\n    return Context(load_config(),StatusProvider(),QuotaProvider(),ServiceProvider(),SessionProvider(sessions,clients),ServiceConfigStore(Path.home()/".ircsh"/"services"),JournalLogProvider())
+def context()->Context:\n    config=load_config()\n    host=HostInspector().inspect(config.account.name)\n    if host is None:raise ConfigError("configured account does not exist on host")\n    systemd=SystemdUserRuntime(DEFAULT_POLICY)\n    units=("soju.service","znc.service","ircsh-psybnc.service","ircsh-muh.service","ircsh-bip.service","ircsh-pounce.service","ircsh-eggdrop-eggdrop1.service","ircsh-limnoria-limnoria1.service","ircsh-sopel-sopel1.service","ircsh-errbot-errbot1.service","ircsh-energymech-energymech1.service","ircsh-psotnic-psotnic1.service","ircsh-weechat-weechat.service","ircsh-irssi-irssi.service","ircsh-bitchx-bitchx.service")\n    meter=QuotaMeter(Path(host.home),units,systemd,connection_meter=ProcConnectionMeter(host.uid))\n    guarded=QuotaRuntime(systemd,meter,QuotaEnforcer(DEFAULT_POLICY.limits),AuditLogger())\n    services=ServiceProvider(production_registry(guarded))\n    tmux=TmuxSessionRuntime()\n    names=("weechat","irssi","bitchx")\n    sessions=tuple(ClientSession(n,tmux).session for n in names)\n    clients=tuple(ClientSession(n,tmux) for n in names)\n    return Context(config,StatusProvider(),QuotaProvider(),services,SessionProvider(sessions,clients),ServiceConfigStore(Path.home()/".ircsh"/"services"),JournalLogProvider())
 
 def cmd_help(ctx:Context)->str:
     return """Available commands:
