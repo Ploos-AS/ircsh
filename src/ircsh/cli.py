@@ -7,6 +7,8 @@ from . import __version__
 from .config import Config,ConfigError,load_config
 from .providers import QuotaProvider,ServiceProvider,StatusProvider
 from .session_provider import SessionProvider
+from .service_config import ServiceConfigStore
+from pathlib import Path
 
 @dataclass(frozen=True,slots=True)
 class Context:
@@ -15,9 +17,10 @@ class Context:
     quota:QuotaProvider
     services:ServiceProvider
     sessions:SessionProvider|None=None
+    service_config:ServiceConfigStore|None=None
 
 def context()->Context:
-    return Context(load_config(),StatusProvider(),QuotaProvider(),ServiceProvider(),SessionProvider())
+    return Context(load_config(),StatusProvider(),QuotaProvider(),ServiceProvider(),SessionProvider(),ServiceConfigStore(Path.home()/".ircsh"/"services"))
 
 def cmd_help(ctx:Context)->str:
     return """Available commands:
@@ -31,6 +34,8 @@ def cmd_help(ctx:Context)->str:
   session start N Start an allowlisted IRC client session
   session attach N Attach a permitted session
   session detach N Detach a permitted session
+  config show S Show allowlisted service configuration
+  config set S K V Set an allowlisted service configuration value
   quota         Show quota status
   version       Show ircsh version
   exit          Leave ircsh
@@ -73,6 +78,22 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
     try: ctx=ctx or context()
     except ConfigError as exc:return f"ircsh: configuration error: {exc}",False
     parts=command.split()
+    if parts and parts[0]=="config":
+        store=ctx.service_config
+        if store is None:return "ircsh: configuration store unavailable",False
+        if len(parts)==3 and parts[1]=="show":
+            if not ctx.config.account.allows("config.read"):return "ircsh: permission denied: config.read",False
+            try:data=store.read(parts[2])
+            except ValueError as exc:return f"ircsh: config operation denied: {exc}",False
+            return "\n".join(f"{k}={str(v).lower() if isinstance(v,bool) else v}" for k,v in sorted(data.items())) or "(empty)",False
+        if len(parts)==5 and parts[1]=="set":
+            if not ctx.config.account.allows("config.manage"):return "ircsh: permission denied: config.manage",False
+            value=parts[4]
+            if value in {"true","false"}:value=value=="true"
+            try:store.set(parts[2],parts[3],value)
+            except (ValueError,OSError) as exc:return f"ircsh: config operation denied: {exc}",False
+            return f"{parts[2]} {parts[3]} updated",False
+        return f"ircsh: invalid config command: {command}",False
     if parts and parts[0]=="session":
         sessions=ctx.sessions or SessionProvider()
         if len(parts)==2 and parts[1]=="list":
