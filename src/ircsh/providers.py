@@ -9,15 +9,18 @@ class Status:
     runtime:str="not configured"
 
 class StatusProvider:
-    def read(self)->Status: return Status()
+    def read(self)->Status:return Status()
 
 class QuotaProvider:
-    def read(self)->str: return "Quota backend: not configured (M1)"
+    def read(self)->str:return "Quota backend: not configured (M1)"
 
 class ServiceProvider:
     def __init__(self,registry:ServiceRegistry|None=None):
         self.registry=registry or ServiceRegistry()
-    def read(self)->tuple[ServiceInfo,...]:
-        return self.registry.statuses()
-    def bots(self)->tuple[ServiceInfo,...]: return self.registry.statuses(ServiceKind.BOT)
-    def bot(self,name:str): return self.registry.get(name,ServiceKind.BOT)\n    def bouncers(self)->tuple[ServiceInfo,...]: return self.registry.statuses(ServiceKind.BOUNCER)\n    def bouncer(self,name:str): return self.registry.get(name,ServiceKind.BOUNCER)
+    def read(self)->tuple[ServiceInfo,...]:return self.registry.statuses()
+    def bots(self)->tuple[ServiceInfo,...]:return self.registry.statuses(ServiceKind.BOT)
+    def bot(self,name:str):return self.registry.get(name,ServiceKind.BOT)
+    def bouncers(self)->tuple[ServiceInfo,...]:return self.registry.statuses(ServiceKind.BOUNCER)
+    def bouncer(self,name:str):return self.registry.get(name,ServiceKind.BOUNCER)
+    def clients(self)->tuple[ServiceInfo,...]:return self.registry.statuses(ServiceKind.CLIENT)
+    def client(self,name:str):return self.registry.get(name,ServiceKind.CLIENT)
