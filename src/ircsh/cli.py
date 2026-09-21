@@ -28,6 +28,7 @@ def cmd_help(ctx:Context)->str:
   services      Show IRC services\n  bot list      List bot instances\n  bot status N  Show bot status\n  bouncer list  List bouncer instances\n  bouncer status N Show bouncer status\n  client list   List persistent IRC clients\n  client status N Show client status
   session list  List persistent sessions
   session status N Show session status
+  session start N Start an allowlisted IRC client session
   session attach N Attach a permitted session
   session detach N Detach a permitted session
   quota         Show quota status
@@ -82,6 +83,11 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
             item=sessions.get(parts[2])
             if not item:return f"ircsh: session not found: {parts[2]}",False
             info=item.status();return f"{info.name} {info.state.value}",False
+        if len(parts)==3 and parts[1]=="start":
+            if not ctx.config.account.allows("sessions.manage"):return "ircsh: permission denied: sessions.manage",False
+            try:info=sessions.start(parts[2])
+            except (ValueError,PermissionError,RuntimeError) as exc:return f"ircsh: session operation denied: {exc}",False
+            return f"{info.name} {info.state.value}",False
         if len(parts)==3 and parts[1] in {"attach","detach"}:
             if not ctx.config.account.allows("sessions.manage"):return "ircsh: permission denied: sessions.manage",False
             item=sessions.get(parts[2])
