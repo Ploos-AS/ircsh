@@ -151,3 +151,17 @@ class SopelBackend:
     def start(self)->ServiceInfo:self.runtime.start(self.unit);return self.status()
     def stop(self)->ServiceInfo:self.runtime.stop(self.unit);return self.status()
     def restart(self)->ServiceInfo:self.runtime.restart(self.unit);return self.status()
+
+class ErrbotBackend:
+    """Multi-instance Errbot IRC adapter with deterministic runtime units."""
+    backend="errbot"
+    def __init__(self,name:str,runtime:Runtime):
+        self.service_id=ServiceId(ServiceKind.BOT,name);self.runtime=runtime
+        self.unit=f"ircsh-errbot-{name}.service"
+    def status(self)->ServiceInfo:
+        state={RuntimeState.ACTIVE:ServiceState.RUNNING,RuntimeState.INACTIVE:ServiceState.STOPPED,
+               RuntimeState.MISSING:ServiceState.UNAVAILABLE}.get(self.runtime.state(self.unit),ServiceState.UNKNOWN)
+        return ServiceInfo(self.service_id,state,self.backend)
+    def start(self)->ServiceInfo:self.runtime.start(self.unit);return self.status()
+    def stop(self)->ServiceInfo:self.runtime.stop(self.unit);return self.status()
+    def restart(self)->ServiceInfo:self.runtime.restart(self.unit);return self.status()
