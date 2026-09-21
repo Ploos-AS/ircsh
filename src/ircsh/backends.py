@@ -113,7 +113,7 @@ class EggdropBackend:
 class PersistentClientBackend:
     """Validated multi-instance persistent IRC client runtime adapter."""
     def __init__(self,name:str,runtime:Runtime,backend:str):
-        if backend not in {"weechat","irssi"}:raise ValueError("unsupported IRC client backend")
+        if backend not in {"weechat","irssi","bitchx"}:raise ValueError("unsupported IRC client backend")
         self.service_id=ServiceId(ServiceKind.CLIENT,name);self.runtime=runtime;self.backend=backend
         self.unit=f"ircsh-{backend}-{name}.service"
     def status(self)->ServiceInfo:
