@@ -3,7 +3,9 @@ from __future__ import annotations
 import os,tomllib
 from dataclasses import dataclass
 from pathlib import Path
-from .model import Account,KNOWN_CAPABILITIES\n\nDEFAULT_CAPABILITIES=frozenset({"status.read","quota.read","services.read"})
+from .model import Account,KNOWN_CAPABILITIES
+
+DEFAULT_CAPABILITIES=frozenset({"status.read","quota.read","services.read"})
 
 class ConfigError(ValueError): pass
 
