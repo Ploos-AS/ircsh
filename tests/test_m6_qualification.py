@@ -20,7 +20,7 @@ class M6Qualification(unittest.TestCase):
   calls=[];audit=Audit()
   out=execute(["account","reconcile","alice","--apply"],self.store,runner=lambda argv,**kw:calls.append((argv,kw)),audit=audit,inspector=Inspector())
   self.assertTrue(out.startswith("APPLIED"));self.assertEqual("useradd",calls[0][0][0]);self.assertEqual("allowed",audit.events[-1].result)
-  host=HostAccount("alice",1001,1001,"ircsh","/home/alice","/usr/bin/ircsh")
+  host=HostAccount("alice",1001,1001,"ircsh","/home/alice","/usr/bin/ircsh",False)
   health=json.loads(execute(["health","--json"],self.store,inspector=Inspector(host)))
   self.assertTrue(health["ok"]);self.assertEqual(0,health["drifted"])
   metrics=execute(["health","--prometheus"],self.store,inspector=Inspector(host))
@@ -30,7 +30,7 @@ class M6Qualification(unittest.TestCase):
   with self.assertRaises(KeyError):execute(["account","reconcile","alice"],self.store,inspector=Inspector())
  def test_drift_is_reported_without_mutation(self):
   execute(["account","create","alice"],self.store)
-  host=HostAccount("alice",1001,1001,"users","/home/alice","/bin/bash")
+  host=HostAccount("alice",1001,1001,"users","/home/alice","/bin/bash",False)
   calls=[]
   dry=execute(["account","reconcile","alice"],self.store,runner=lambda *x:calls.append(x),inspector=Inspector(host))
   self.assertIn("usermod",dry);self.assertEqual([],calls)
