@@ -128,3 +128,34 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
         return f"ircsh: permission denied: {spec.capability}",False
     return spec.handler(ctx),False
 
+
+def interactive(ctx:Context|None=None)->int:
+    """Run the restricted interactive command loop."""
+    try:
+        ctx=ctx or context()
+    except ConfigError as exc:
+        print(f"ircsh: configuration error: {exc}")
+        return 2
+    while True:
+        try:
+            line=input("ircsh> ")
+        except (EOFError,KeyboardInterrupt):
+            print()
+            return 0
+        output,done=execute(line,ctx)
+        if output: print(output)
+        if done:return 0
+
+def main(argv:list[str]|None=None)->int:
+    """CLI entry point."""
+    parser=argparse.ArgumentParser(prog="ircsh",description="Restricted IRC account shell")
+    parser.add_argument("--command","-c",help="execute one ircsh built-in command and exit")
+    args=parser.parse_args(argv)
+    if args.command is None:return interactive()
+    output,_=execute(args.command)
+    if output:print(output)
+    if output.startswith("ircsh: unknown command:") or output.startswith("ircsh: invalid ") or output.startswith("ircsh: configuration error:"):
+        return 2
+    if output.startswith("ircsh: permission denied:") or output.startswith("ircsh: ") and " operation denied:" in output:
+        return 1
+    return 0
