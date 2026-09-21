@@ -44,3 +44,11 @@ class TmuxSessionRuntime:
         if self.state(target) is SessionState.MISSING:
             raise RuntimeError("session does not exist")
         self._run(["tmux","detach-client","-s",target],check=True)
+
+    def start(self,target:str,argv:tuple[str,...])->None:
+        target=self._target(target)
+        allowed={("weechat",),("irssi",),("BitchX",)}
+        if argv not in allowed:raise ValueError("unsupported client executable")
+        if self.state(target) is not SessionState.MISSING:
+            raise RuntimeError("session already exists")
+        self._run(["tmux","new-session","-d","-s",target,"--",*argv],check=True)
