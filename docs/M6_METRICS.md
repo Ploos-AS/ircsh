@@ -1,0 +1,1 @@
+# M6.9 health CLI and metrics\n\n`ircsh-admin health`, `--json`, and `--prometheus` expose local aggregate health. No network listener is started. Prometheus output contains aggregate gauges only.\n
