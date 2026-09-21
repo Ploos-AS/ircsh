@@ -25,7 +25,7 @@ class ClientTests(unittest.TestCase):
         with self.assertRaises(ValueError):PersistentClientBackend("x",FakeRuntime(),"bash")
     def test_list_status_and_caps(self):
         self.assertIn("weechat weechat stopped",execute("client list",ctx({"clients.read"}))[0])
-        self.assertEqual("irssi irssi inactive",execute("client status irssi",ctx({"clients.read"}))[0])
+        self.assertEqual("irssi irssi stopped",execute("client status irssi",ctx({"clients.read"}))[0])
         self.assertEqual("ircsh: permission denied: clients.manage",execute("client start irssi",ctx({"clients.read"}))[0])
     def test_lifecycle(self):
         c=ctx({"clients.manage"})
