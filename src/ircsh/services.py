@@ -57,7 +57,7 @@ class ServiceRegistry:
             PlaceholderBackend(ServiceKind.BOUNCER,"pounce1","pounce"),
             PlaceholderBackend(ServiceKind.BOT,"eggdrop1","eggdrop"),
             PlaceholderBackend(ServiceKind.CLIENT,"weechat","weechat"),
-            PlaceholderBackend(ServiceKind.CLIENT,"irssi","irssi"),
+            PlaceholderBackend(ServiceKind.CLIENT,"irssi","irssi"),\n            PlaceholderBackend(ServiceKind.CLIENT,"bitchx","bitchx"),
         )
         self._items={(b.service_id.kind,b.service_id.name):b for b in (backends or defaults)}
     def get(self,name:str,kind:ServiceKind|None=None)->ServiceBackend|None:
