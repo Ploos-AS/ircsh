@@ -16,4 +16,4 @@ Run:
 python -m unittest discover -s tests -v
 ```
 
-CI executes the suite on Python 3.11, 3.12 and 3.13. A green CI run is required before marking M2 PASS.
+CI executes the suite on Python 3.11, 3.12 and 3.13.\n\n**Result: PASS.** The integrated M2 suite and installed CLI smoke tests are green across the CI matrix.
