@@ -2,7 +2,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 
-KNOWN_CAPABILITIES=frozenset({"status.read","quota.read","services.read","bots.read","bots.manage","bouncers.read","bouncers.manage","clients.read","clients.manage"})
+KNOWN_CAPABILITIES=frozenset({"status.read","quota.read","services.read","bots.read","bots.manage","bouncers.read","bouncers.manage","clients.read","clients.manage","sessions.read","sessions.manage"})
 
 @dataclass(frozen=True,slots=True)
 class Account:
