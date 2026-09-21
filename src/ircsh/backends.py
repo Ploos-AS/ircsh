@@ -34,3 +34,19 @@ class ZncBackend:
     def start(self)->ServiceInfo:self.runtime.start(self.unit);return self.status()
     def stop(self)->ServiceInfo:self.runtime.stop(self.unit);return self.status()
     def restart(self)->ServiceInfo:self.runtime.restart(self.unit);return self.status()
+
+class PsybncBackend:
+    """psyBNC adapter. Lifecycle is allowed only through its dedicated isolated unit."""
+    backend="psybnc"
+    def __init__(self,name:str,runtime:Runtime,unit:str="ircsh-psybnc.service"):
+        self.service_id=ServiceId(ServiceKind.BOUNCER,name)
+        self.runtime=runtime
+        if unit!="ircsh-psybnc.service":raise ValueError("unsupported psyBNC runtime unit")
+        self.unit=unit
+    def status(self)->ServiceInfo:
+        state={RuntimeState.ACTIVE:ServiceState.RUNNING,RuntimeState.INACTIVE:ServiceState.STOPPED,
+               RuntimeState.MISSING:ServiceState.UNAVAILABLE}.get(self.runtime.state(self.unit),ServiceState.UNKNOWN)
+        return ServiceInfo(self.service_id,state,self.backend)
+    def start(self)->ServiceInfo:self.runtime.start(self.unit);return self.status()
+    def stop(self)->ServiceInfo:self.runtime.stop(self.unit);return self.status()
+    def restart(self)->ServiceInfo:self.runtime.restart(self.unit);return self.status()
