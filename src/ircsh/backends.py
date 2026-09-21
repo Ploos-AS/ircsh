@@ -50,3 +50,48 @@ class PsybncBackend:
     def start(self)->ServiceInfo:self.runtime.start(self.unit);return self.status()
     def stop(self)->ServiceInfo:self.runtime.stop(self.unit);return self.status()
     def restart(self)->ServiceInfo:self.runtime.restart(self.unit);return self.status()
+
+class MuhBackend:
+    """muh legacy bouncer adapter, pinned to an isolated runtime target."""
+    backend="muh"
+    def __init__(self,name:str,runtime:Runtime,unit:str="ircsh-muh.service"):
+        self.service_id=ServiceId(ServiceKind.BOUNCER,name);self.runtime=runtime
+        if unit!="ircsh-muh.service":raise ValueError("unsupported muh runtime unit")
+        self.unit=unit
+    def status(self)->ServiceInfo:
+        state={RuntimeState.ACTIVE:ServiceState.RUNNING,RuntimeState.INACTIVE:ServiceState.STOPPED,
+               RuntimeState.MISSING:ServiceState.UNAVAILABLE}.get(self.runtime.state(self.unit),ServiceState.UNKNOWN)
+        return ServiceInfo(self.service_id,state,self.backend)
+    def start(self)->ServiceInfo:self.runtime.start(self.unit);return self.status()
+    def stop(self)->ServiceInfo:self.runtime.stop(self.unit);return self.status()
+    def restart(self)->ServiceInfo:self.runtime.restart(self.unit);return self.status()
+
+class BipBackend:
+    """BIP bouncer adapter using a dedicated controlled runtime target."""
+    backend="bip"
+    def __init__(self,name:str,runtime:Runtime,unit:str="ircsh-bip.service"):
+        self.service_id=ServiceId(ServiceKind.BOUNCER,name);self.runtime=runtime
+        if unit!="ircsh-bip.service":raise ValueError("unsupported BIP runtime unit")
+        self.unit=unit
+    def status(self)->ServiceInfo:
+        state={RuntimeState.ACTIVE:ServiceState.RUNNING,RuntimeState.INACTIVE:ServiceState.STOPPED,
+               RuntimeState.MISSING:ServiceState.UNAVAILABLE}.get(self.runtime.state(self.unit),ServiceState.UNKNOWN)
+        return ServiceInfo(self.service_id,state,self.backend)
+    def start(self)->ServiceInfo:self.runtime.start(self.unit);return self.status()
+    def stop(self)->ServiceInfo:self.runtime.stop(self.unit);return self.status()
+    def restart(self)->ServiceInfo:self.runtime.restart(self.unit);return self.status()
+
+class PounceBackend:
+    """pounce bouncer adapter using a dedicated controlled runtime target."""
+    backend="pounce"
+    def __init__(self,name:str,runtime:Runtime,unit:str="ircsh-pounce.service"):
+        self.service_id=ServiceId(ServiceKind.BOUNCER,name);self.runtime=runtime
+        if unit!="ircsh-pounce.service":raise ValueError("unsupported pounce runtime unit")
+        self.unit=unit
+    def status(self)->ServiceInfo:
+        state={RuntimeState.ACTIVE:ServiceState.RUNNING,RuntimeState.INACTIVE:ServiceState.STOPPED,
+               RuntimeState.MISSING:ServiceState.UNAVAILABLE}.get(self.runtime.state(self.unit),ServiceState.UNKNOWN)
+        return ServiceInfo(self.service_id,state,self.backend)
+    def start(self)->ServiceInfo:self.runtime.start(self.unit);return self.status()
+    def stop(self)->ServiceInfo:self.runtime.stop(self.unit);return self.status()
+    def restart(self)->ServiceInfo:self.runtime.restart(self.unit);return self.status()
