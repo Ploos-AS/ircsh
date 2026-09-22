@@ -5,8 +5,18 @@ from dataclasses import dataclass
 from collections.abc import Callable
 from . import __version__
 from .config import Config,ConfigError,load_config
-from .providers import QuotaProvider,ServiceProvider,StatusProvider,production_registry\nfrom .systemd_runtime import SystemdUserRuntime\nfrom .quota_runtime import QuotaRuntime\nfrom .quota_meter import QuotaMeter\nfrom .connection_meter import ProcConnectionMeter\nfrom .quotas import QuotaEnforcer\nfrom .isolation import DEFAULT_POLICY\nfrom .audit import AuditLogger\nfrom .host_inspector import HostInspector
-from .session_provider import SessionProvider\nfrom .tmux_runtime import TmuxSessionRuntime\nfrom .client_sessions import ClientSession
+from .providers import QuotaProvider,ServiceProvider,StatusProvider,production_registry
+from .systemd_runtime import SystemdUserRuntime
+from .quota_runtime import QuotaRuntime
+from .quota_meter import QuotaMeter
+from .connection_meter import ProcConnectionMeter
+from .quotas import QuotaEnforcer
+from .isolation import DEFAULT_POLICY
+from .audit import AuditLogger
+from .host_inspector import HostInspector
+from .session_provider import SessionProvider
+from .tmux_runtime import TmuxSessionRuntime
+from .client_sessions import ClientSession
 from .service_config import ServiceConfigStore
 from .logs import JournalLogProvider
 from pathlib import Path
@@ -21,7 +31,20 @@ class Context:
     service_config:ServiceConfigStore|None=None
     logs:JournalLogProvider|None=None
 
-def context()->Context:\n    config=load_config()\n    host=HostInspector().inspect(config.account.name)\n    if host is None:raise ConfigError("configured account does not exist on host")\n    systemd=SystemdUserRuntime(DEFAULT_POLICY)\n    units=("soju.service","znc.service","ircsh-psybnc.service","ircsh-muh.service","ircsh-bip.service","ircsh-pounce.service","ircsh-eggdrop-eggdrop1.service","ircsh-limnoria-limnoria1.service","ircsh-sopel-sopel1.service","ircsh-errbot-errbot1.service","ircsh-energymech-energymech1.service","ircsh-psotnic-psotnic1.service","ircsh-weechat-weechat.service","ircsh-irssi-irssi.service","ircsh-bitchx-bitchx.service")\n    meter=QuotaMeter(Path(host.home),units,systemd,connection_meter=ProcConnectionMeter(host.uid))\n    guarded=QuotaRuntime(systemd,meter,QuotaEnforcer(DEFAULT_POLICY.limits),AuditLogger())\n    services=ServiceProvider(production_registry(guarded))\n    tmux=TmuxSessionRuntime()\n    names=("weechat","irssi","bitchx")\n    sessions=tuple(ClientSession(n,tmux).session for n in names)\n    clients=tuple(ClientSession(n,tmux) for n in names)\n    return Context(config,StatusProvider(),QuotaProvider(),services,SessionProvider(sessions,clients),ServiceConfigStore(Path.home()/".ircsh"/"services"),JournalLogProvider())
+def context()->Context:
+    config=load_config()
+    host=HostInspector().inspect(config.account.name)
+    if host is None:raise ConfigError("configured account does not exist on host")
+    systemd=SystemdUserRuntime(DEFAULT_POLICY)
+    units=("soju.service","znc.service","ircsh-psybnc.service","ircsh-muh.service","ircsh-bip.service","ircsh-pounce.service","ircsh-eggdrop-eggdrop1.service","ircsh-limnoria-limnoria1.service","ircsh-sopel-sopel1.service","ircsh-errbot-errbot1.service","ircsh-energymech-energymech1.service","ircsh-psotnic-psotnic1.service","ircsh-weechat-weechat.service","ircsh-irssi-irssi.service","ircsh-bitchx-bitchx.service")
+    meter=QuotaMeter(Path(host.home),units,systemd,connection_meter=ProcConnectionMeter(host.uid))
+    guarded=QuotaRuntime(systemd,meter,QuotaEnforcer(DEFAULT_POLICY.limits),AuditLogger())
+    services=ServiceProvider(production_registry(guarded))
+    tmux=TmuxSessionRuntime()
+    names=("weechat","irssi","bitchx")
+    sessions=tuple(ClientSession(n,tmux).session for n in names)
+    clients=tuple(ClientSession(n,tmux) for n in names)
+    return Context(config,StatusProvider(),QuotaProvider(),services,SessionProvider(sessions,clients),ServiceConfigStore(Path.home()/".ircsh"/"services"),JournalLogProvider())
 
 def cmd_help(ctx:Context)->str:
     return """Available commands:
@@ -29,7 +52,13 @@ def cmd_help(ctx:Context)->str:
   account       Show account identity
   capabilities Show account capabilities
   status        Show account/session status
-  services      Show IRC services\n  bot list      List bot instances\n  bot status N  Show bot status\n  bouncer list  List bouncer instances\n  bouncer status N Show bouncer status\n  client list   List persistent IRC clients\n  client status N Show client status
+  services      Show IRC services
+  bot list      List bot instances
+  bot status N  Show bot status
+  bouncer list  List bouncer instances
+  bouncer status N Show bouncer status
+  client list   List persistent IRC clients
+  client status N Show client status
   session list  List persistent sessions
   session status N Show session status
   session start N Start an allowlisted IRC client session
@@ -45,7 +74,8 @@ def cmd_help(ctx:Context)->str:
 
 def cmd_account(ctx:Context)->str: return f"Account: {ctx.config.account.name}"
 def cmd_capabilities(ctx:Context)->str:
-    return "\n".join(sorted(ctx.config.account.capabilities)) or "(none)"
+    return "
+".join(sorted(ctx.config.account.capabilities)) or "(none)"
 def cmd_status(ctx:Context)->str:
     s=ctx.status.read()
     return f"""ircsh status
@@ -56,7 +86,8 @@ Arbitrary OS command execution: disabled"""
 def cmd_services(ctx:Context)->str:
     lines=["SERVICE   STATE        AUTOSTART"]
     lines.extend(f"{info.name:<9} {info.state.value:<12} {'yes' if info.autostart else 'no'}" for info in ctx.services.read())
-    return "\n".join(lines)
+    return "
+".join(lines)
 def cmd_quota(ctx:Context)->str: return ctx.quota.read()
 def cmd_version(ctx:Context)->str: return f"ircsh {__version__}"
 
@@ -96,7 +127,8 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
             if not ctx.config.account.allows("config.read"):return "ircsh: permission denied: config.read",False
             try:data=store.read(parts[2])
             except ValueError as exc:return f"ircsh: config operation denied: {exc}",False
-            return "\n".join(f"{k}={str(v).lower() if isinstance(v,bool) else v}" for k,v in sorted(data.items())) or "(empty)",False
+            return "
+".join(f"{k}={str(v).lower() if isinstance(v,bool) else v}" for k,v in sorted(data.items())) or "(empty)",False
         if len(parts)==5 and parts[1]=="set":
             if not ctx.config.account.allows("config.manage"):return "ircsh: permission denied: config.manage",False
             value=parts[4]
@@ -109,7 +141,8 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
         sessions=ctx.sessions or SessionProvider()
         if len(parts)==2 and parts[1]=="list":
             if not ctx.config.account.allows("sessions.read"):return "ircsh: permission denied: sessions.read",False
-            return "\n".join(f"{i.name} {i.state.value}" for i in sessions.read()) or "(none)",False
+            return "
+".join(f"{i.name} {i.state.value}" for i in sessions.read()) or "(none)",False
         if len(parts)==3 and parts[1]=="status":
             if not ctx.config.account.allows("sessions.read"):return "ircsh: permission denied: sessions.read",False
             item=sessions.get(parts[2])
@@ -132,7 +165,8 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
         if len(parts)==2 and parts[1]=="list":
             if not ctx.config.account.allows("bots.read"):return "ircsh: permission denied: bots.read",False
             bots=ctx.services.bots()
-            return "\n".join(f"{b.name} {b.backend} {b.state.value}" for b in bots) or "(none)",False
+            return "
+".join(f"{b.name} {b.backend} {b.state.value}" for b in bots) or "(none)",False
         if len(parts)==3 and parts[1]=="status":
             if not ctx.config.account.allows("bots.read"):return "ircsh: permission denied: bots.read",False
             bot=ctx.services.bot(parts[2])
@@ -151,7 +185,8 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
         if len(parts)==2 and parts[1]=="list":
             if not ctx.config.account.allows("bouncers.read"):return "ircsh: permission denied: bouncers.read",False
             items=ctx.services.bouncers()
-            return "\n".join(f"{b.name} {b.backend} {b.state.value}" for b in items) or "(none)",False
+            return "
+".join(f"{b.name} {b.backend} {b.state.value}" for b in items) or "(none)",False
         if len(parts)==3 and parts[1]=="status":
             if not ctx.config.account.allows("bouncers.read"):return "ircsh: permission denied: bouncers.read",False
             item=ctx.services.bouncer(parts[2])
@@ -170,7 +205,8 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
         if len(parts)==2 and parts[1]=="list":
             if not ctx.config.account.allows("clients.read"):return "ircsh: permission denied: clients.read",False
             items=ctx.services.clients()
-            return "\n".join(f"{i.name} {i.backend} {i.state.value}" for i in items) or "(none)",False
+            return "
+".join(f"{i.name} {i.backend} {i.state.value}" for i in items) or "(none)",False
         if len(parts)==3 and parts[1]=="status":
             if not ctx.config.account.allows("clients.read"):return "ircsh: permission denied: clients.read",False
             item=ctx.services.client(parts[2])
