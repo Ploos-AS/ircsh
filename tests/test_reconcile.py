@@ -10,7 +10,10 @@ class ReconcileTests(unittest.TestCase):
   self.assertEqual("useradd",a[0].argv[0])
  def test_existing_enabled_account_is_compliant(self):
   self.assertEqual((),AccountReconciler().plan(ManagedAccount("alice","irc-advanced"),host()))
- def test_reenabled_locked_account_is_unlocked_and_shell_restored(self):\n  a=AccountReconciler().plan(ManagedAccount("alice","irc-basic",True),host("/usr/sbin/nologin",True))\n  self.assertEqual(("usermod","--unlock","--shell","/usr/bin/ircsh","--","alice"),a[0].argv)\n def test_disabled_account_is_locked_and_nologin(self):
+ def test_reenabled_locked_account_is_unlocked_and_shell_restored(self):
+  a=AccountReconciler().plan(ManagedAccount("alice","irc-basic",True),host("/usr/sbin/nologin",True))
+  self.assertEqual(("usermod","--unlock","--shell","/usr/bin/ircsh","--","alice"),a[0].argv)
+ def test_disabled_account_is_locked_and_nologin(self):
   a=AccountReconciler().plan(ManagedAccount("alice","irc-basic",False),host())
   self.assertEqual(("usermod","--lock","--shell","/usr/sbin/nologin","--","alice"),a[0].argv)
  def test_nologin_but_unlocked_is_not_compliant(self):
