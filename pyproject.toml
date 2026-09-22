@@ -12,7 +12,8 @@ license = { text = "MIT" }
 authors = [{ name = "Ploos AS" }]
 
 [project.scripts]
-ircsh = "ircsh.cli:main"\nircsh-admin = "ircsh.admin_cli:main"
+ircsh = "ircsh.cli:main"
+ircsh-admin = "ircsh.admin_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
