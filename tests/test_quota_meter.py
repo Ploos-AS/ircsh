@@ -11,7 +11,7 @@ class QuotaMeterTests(unittest.TestCase):
     def test_measures_disk_and_active_services(self):
         with tempfile.TemporaryDirectory() as d:
             root=Path(d);(root/"a").write_bytes(b"x"*1048577)
-            m=QuotaMeter(root,("ircsh-a.service","ircsh-b.service"),Runtime({"ircsh-a.service":RuntimeState.ACTIVE,"ircsh-b.service":RuntimeState.INACTIVE}))
+            m=QuotaMeter(root,("ircsh-a.service","ircsh-b.service"),Runtime({"ircsh-a.service":RuntimeState.ACTIVE,"ircsh-b.service":RuntimeState.INACTIVE}),connection_meter=type("Connections",(),{"count":lambda self:0})())
             u=m.read();self.assertEqual(2,u.disk_mb);self.assertEqual(1,u.services);self.assertEqual(0,u.connections)
     def test_requires_absolute_root(self):
         with self.assertRaises(ValueError):QuotaMeter(Path("relative"),(),Runtime({}))
