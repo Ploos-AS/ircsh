@@ -2,7 +2,8 @@
 from __future__ import annotations
 from dataclasses import dataclass
 import re
-from .isolation import ResourceLimits\nfrom .model import KNOWN_CAPABILITIES
+from .isolation import ResourceLimits
+from .model import KNOWN_CAPABILITIES
 _PLAN=re.compile(r"^[a-z][a-z0-9_-]{0,31}$")
 @dataclass(frozen=True,slots=True)
 class AccountPlan:
