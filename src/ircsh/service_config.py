@@ -33,31 +33,41 @@ class ServiceConfigStore:
 
     def read(self,service:str)->dict[str,object]:
         path=self._path(service)
+        if path.is_symlink():raise RuntimeError("symlinked configuration rejected")
         if not path.exists():return {}
         result={}
         schema=SCHEMAS[service]
         for line in path.read_text(encoding="utf-8").splitlines():
-            if "=" not in line:continue
+            if "=" not in line:raise RuntimeError("malformed configuration")
             key,value=line.split("=",1)
+            if key in result:raise RuntimeError("duplicate configuration key")
             expected=schema.get(key)
-            if expected is bool and value in {"true","false"}:result[key]=value=="true"
-            elif expected is str:result[key]=value
+            if expected is None:raise RuntimeError("unknown configuration key")
+            if expected is bool:
+                if value not in {"true","false"}:raise RuntimeError("malformed boolean")
+                parsed=value=="true"
+            else:
+                parsed=value
+            try:self.validate(service,key,parsed)
+            except ValueError as exc:raise RuntimeError("invalid stored configuration") from exc
+            result[key]=parsed
         return result
 
     def set(self,service:str,key:str,value:object)->None:
         self.validate(service,key,value)
         path=self._path(service)
+        if self.root.is_symlink():raise RuntimeError("symlinked configuration root rejected")
         self.root.mkdir(mode=0o700,parents=True,exist_ok=True)
-        current={}
-        if path.exists():
-            for line in path.read_text(encoding="utf-8").splitlines():
-                if "=" in line:
-                    k,v=line.split("=",1);current[k]=v
-        current[key]="true" if value is True else "false" if value is False else value
+        os.chmod(self.root,0o700)
+        current=self.read(service)
+        current[key]=value
         fd,tmp=tempfile.mkstemp(prefix=f".{service}.",dir=self.root,text=True)
         try:
             with os.fdopen(fd,"w",encoding="utf-8") as f:
-                for k in sorted(current):f.write(f"{k}={current[k]}\n")
+                for k in sorted(current):
+                    v=current[k]
+                    rendered="true" if v is True else "false" if v is False else v
+                    f.write(f"{k}={rendered}\n")
                 f.flush();os.fsync(f.fileno())
             os.chmod(tmp,0o600)
             os.replace(tmp,path)
