@@ -16,6 +16,7 @@ class AccountReconciler:
   if account.enabled:
    if host is None:return (ReconcileAction(("useradd","--create-home","--home-dir",p.home,"--gid",p.group,"--shell",p.shell,"--",p.username)),)
    args=["usermod"]
+   if host.locked:args+=["--unlock"]
    if host.group!=p.group:args+=["--gid",p.group]
    if host.home!=p.home:args+=["--home",p.home,"--move-home"]
    if host.shell!=p.shell:args+=["--shell",p.shell]
