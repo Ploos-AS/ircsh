@@ -16,6 +16,4 @@ def render_match_group(group:str="ircsh",policy:SshPolicy=DEFAULT_SSH_POLICY)->s
         f"    PermitUserEnvironment {yesno(policy.permit_user_environment)}",
         "    PermitUserRC no",
     ]
-    return "
-".join(lines)+"
-"
+    return "\n".join(lines)+"\n"
