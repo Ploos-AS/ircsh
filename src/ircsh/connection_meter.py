@@ -4,6 +4,8 @@ from pathlib import Path
 
 class ConnectionMeasurementError(RuntimeError):pass
 
+_ACTIVE_TCP_STATES=frozenset({"01","02","03","04","05","08","09","0B"})
+
 class ProcConnectionMeter:
     """Count active TCP sockets owned by a trusted account UID."""
     def __init__(self,uid:int,proc:Path=Path("/proc")):
@@ -16,10 +18,10 @@ class ProcConnectionMeter:
         count=0
         for line in lines:
             fields=line.split()
-            if len(fields)<8:continue
+            if len(fields)<8:raise ConnectionMeasurementError("malformed connection table")
             try:state=fields[3];uid=int(fields[7])
-            except (ValueError,IndexError):continue
-            if state=="01" and uid==self.uid:count+=1
+            except (ValueError,IndexError) as exc:raise ConnectionMeasurementError("malformed connection table") from exc
+            if state in _ACTIVE_TCP_STATES and uid==self.uid:count+=1
         return count
     def count(self)->int:
         return self._table(self.proc/"net"/"tcp")+self._table(self.proc/"net"/"tcp6")
