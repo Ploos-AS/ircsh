@@ -20,5 +20,8 @@ class AccountReconciler:
    if host.home!=p.home:args+=["--home",p.home,"--move-home"]
    if host.shell!=p.shell:args+=["--shell",p.shell]
    return () if len(args)==1 else (ReconcileAction(tuple(args+["--",p.username])),)
-  if host is None or host.shell=="/usr/sbin/nologin":return ()
-  return (ReconcileAction(("usermod","--lock","--shell","/usr/sbin/nologin","--",p.username)),)
+  if host is None:return ()
+  args=["usermod"]
+  if not host.locked:args+=["--lock"]
+  if host.shell!="/usr/sbin/nologin":args+=["--shell","/usr/sbin/nologin"]
+  return () if len(args)==1 else (ReconcileAction(tuple(args+["--",p.username])),)
