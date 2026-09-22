@@ -74,8 +74,7 @@ def cmd_help(ctx:Context)->str:
 
 def cmd_account(ctx:Context)->str: return f"Account: {ctx.config.account.name}"
 def cmd_capabilities(ctx:Context)->str:
-    return "
-".join(sorted(ctx.config.account.capabilities)) or "(none)"
+    return "\n".join(sorted(ctx.config.account.capabilities)) or "(none)"
 def cmd_status(ctx:Context)->str:
     s=ctx.status.read()
     return f"""ircsh status
@@ -86,8 +85,7 @@ Arbitrary OS command execution: disabled"""
 def cmd_services(ctx:Context)->str:
     lines=["SERVICE   STATE        AUTOSTART"]
     lines.extend(f"{info.name:<9} {info.state.value:<12} {'yes' if info.autostart else 'no'}" for info in ctx.services.read())
-    return "
-".join(lines)
+    return "\n".join(lines)
 def cmd_quota(ctx:Context)->str: return ctx.quota.read()
 def cmd_version(ctx:Context)->str: return f"ircsh {__version__}"
 
@@ -127,8 +125,7 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
             if not ctx.config.account.allows("config.read"):return "ircsh: permission denied: config.read",False
             try:data=store.read(parts[2])
             except ValueError as exc:return f"ircsh: config operation denied: {exc}",False
-            return "
-".join(f"{k}={str(v).lower() if isinstance(v,bool) else v}" for k,v in sorted(data.items())) or "(empty)",False
+            return "\n".join(f"{k}={str(v).lower() if isinstance(v,bool) else v}" for k,v in sorted(data.items())) or "(empty)",False
         if len(parts)==5 and parts[1]=="set":
             if not ctx.config.account.allows("config.manage"):return "ircsh: permission denied: config.manage",False
             value=parts[4]
@@ -141,8 +138,7 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
         sessions=ctx.sessions or SessionProvider()
         if len(parts)==2 and parts[1]=="list":
             if not ctx.config.account.allows("sessions.read"):return "ircsh: permission denied: sessions.read",False
-            return "
-".join(f"{i.name} {i.state.value}" for i in sessions.read()) or "(none)",False
+            return "\n".join(f"{i.name} {i.state.value}" for i in sessions.read()) or "(none)",False
         if len(parts)==3 and parts[1]=="status":
             if not ctx.config.account.allows("sessions.read"):return "ircsh: permission denied: sessions.read",False
             item=sessions.get(parts[2])
@@ -165,8 +161,7 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
         if len(parts)==2 and parts[1]=="list":
             if not ctx.config.account.allows("bots.read"):return "ircsh: permission denied: bots.read",False
             bots=ctx.services.bots()
-            return "
-".join(f"{b.name} {b.backend} {b.state.value}" for b in bots) or "(none)",False
+            return "\n".join(f"{b.name} {b.backend} {b.state.value}" for b in bots) or "(none)",False
         if len(parts)==3 and parts[1]=="status":
             if not ctx.config.account.allows("bots.read"):return "ircsh: permission denied: bots.read",False
             bot=ctx.services.bot(parts[2])
@@ -185,8 +180,7 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
         if len(parts)==2 and parts[1]=="list":
             if not ctx.config.account.allows("bouncers.read"):return "ircsh: permission denied: bouncers.read",False
             items=ctx.services.bouncers()
-            return "
-".join(f"{b.name} {b.backend} {b.state.value}" for b in items) or "(none)",False
+            return "\n".join(f"{b.name} {b.backend} {b.state.value}" for b in items) or "(none)",False
         if len(parts)==3 and parts[1]=="status":
             if not ctx.config.account.allows("bouncers.read"):return "ircsh: permission denied: bouncers.read",False
             item=ctx.services.bouncer(parts[2])
@@ -205,8 +199,7 @@ def execute(line:str,ctx:Context|None=None)->tuple[str,bool]:
         if len(parts)==2 and parts[1]=="list":
             if not ctx.config.account.allows("clients.read"):return "ircsh: permission denied: clients.read",False
             items=ctx.services.clients()
-            return "
-".join(f"{i.name} {i.backend} {i.state.value}" for i in items) or "(none)",False
+            return "\n".join(f"{i.name} {i.backend} {i.state.value}" for i in items) or "(none)",False
         if len(parts)==3 and parts[1]=="status":
             if not ctx.config.account.allows("clients.read"):return "ircsh: permission denied: clients.read",False
             item=ctx.services.client(parts[2])
