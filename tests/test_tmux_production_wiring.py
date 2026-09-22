@@ -10,7 +10,7 @@ class Runner:
 class TmuxHardeningTests(unittest.TestCase):
  def test_start_uses_fixed_tmux_command(self):
   r=Runner();TmuxSessionRuntime(r).start("ircsh-session-weechat",("weechat",))
-  self.assertEqual(["tmux","new-session","-d","-s","ircsh-session-weechat","weechat"],r.calls[-1][0])
+  self.assertEqual(["tmux","new-session","-d","-s","ircsh-session-weechat","--","weechat"],r.calls[-1][0])
  def test_program_arguments_not_accepted(self):
   with self.assertRaises(ValueError):TmuxSessionRuntime(Runner()).start("ircsh-session-weechat",("weechat","/bin/sh"))
  @patch("ircsh.cli.load_config")
