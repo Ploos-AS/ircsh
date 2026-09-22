@@ -22,8 +22,12 @@ def execute(argv,store=None,runner=None,audit=None,inspector=None):
   store.put(ManagedAccount(ns.username,ns.plan));return f"created {ns.username}"
  if ns.username not in accounts:raise KeyError(ns.username)
  a=accounts[ns.username]
- if ns.action=="disable":store.put(ManagedAccount(a.username,a.plan,False));return f"disabled {a.username}"
- if ns.action=="enable":store.put(ManagedAccount(a.username,a.plan,True));return f"enabled {a.username}"
+ if ns.action in {"disable","enable"}:
+  enabled=ns.action=="enable"
+  if a.enabled==enabled:return f"{ns.action}d {a.username} (no change)"
+  store.put(ManagedAccount(a.username,a.plan,enabled))
+  (audit or AuditLogger()).emit(AuditEvent("account_"+ns.action,a.username,"allowed"))
+  return f"{ns.action}d {a.username}"
  if ns.action=="set-plan":get_plan(ns.plan);store.put(ManagedAccount(a.username,ns.plan,a.enabled));return f"updated {a.username} plan={ns.plan}"
  raise ValueError("unsupported admin action")
 def main():
