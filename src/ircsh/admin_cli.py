@@ -24,29 +24,23 @@ def execute(argv,store=None,runner=None,audit=None,inspector=None):
   if ns.json:return snap.json()
   return f"ok={str(snap.ok).lower()} accounts={snap.accounts} drifted={snap.drifted} missing={snap.missing}"
  accounts=store.read()
- if ns.action=="list":return "
-".join(f"{a.username}\t{a.plan}\t{'enabled' if a.enabled else 'disabled'}" for a in sorted(accounts.values(),key=lambda x:x.username)) or "(none)"
+ if ns.action=="list":return "\n".join(f"{a.username}\t{a.plan}\t{'enabled' if a.enabled else 'disabled'}" for a in sorted(accounts.values(),key=lambda x:x.username)) or "(none)"
  if ns.action=="show":
   if ns.username not in accounts:raise KeyError(ns.username)
-  a=accounts[ns.username];return f"username={a.username}
-plan={a.plan}
-enabled={'true' if a.enabled else 'false'}"
+  a=accounts[ns.username];return f"username={a.username}\nplan={a.plan}\nenabled={'true' if a.enabled else 'false'}"
  if ns.action=="reconcile":
   if ns.username not in accounts:raise KeyError(ns.username)
   host=(inspector or HostInspector()).inspect(ns.username)
   actions=AccountReconciler().plan(accounts[ns.username],host)
-  rendered="
-".join(" ".join(a.argv) for a in actions) or "(no changes)"
-  if not ns.apply:return "DRY-RUN
-"+rendered
+  rendered="\n".join(" ".join(a.argv) for a in actions) or "(no changes)"
+  if not ns.apply:return "DRY-RUN\n"+rendered
   if runner is None:raise RuntimeError("privileged runner unavailable")
   audit=audit or AuditLogger()
   for action in actions:
    try:runner(list(action.argv),check=True)
    except Exception as exc:
     audit.emit(AuditEvent("account_reconcile",ns.username,"failed",type(exc).__name__));raise RuntimeError("reconciliation failed") from exc
-  audit.emit(AuditEvent("account_reconcile",ns.username,"allowed"));return "APPLIED
-"+rendered
+  audit.emit(AuditEvent("account_reconcile",ns.username,"allowed"));return "APPLIED\n"+rendered
  if ns.action=="create":
   if ns.username in accounts:raise ValueError("account already exists")
   store.put(ManagedAccount(ns.username,ns.plan));return f"created {ns.username}"
