@@ -18,7 +18,7 @@ class M5Qualification(unittest.TestCase):
   line=p.key_line(key)
   self.assertEqual("/home/alice/.ssh/authorized_keys",p.authorized_keys)
   self.assertEqual(0o600,p.modes()[p.authorized_keys])
-  self.assertTrue(line.startswith("no-agent-forwarding,no-port-forwarding,no-X11-forwarding,restrict "))
+  self.assertTrue(line.startswith("no-user-rc,no-agent-forwarding,no-port-forwarding,no-X11-forwarding,restrict "))
  def test_deployment_must_validate_before_reload(self):
   calls=[]
   def run(argv,**kw):calls.append(argv);return SimpleNamespace(returncode=0)
