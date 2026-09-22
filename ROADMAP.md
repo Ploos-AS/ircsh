@@ -58,6 +58,19 @@
 - Provisioning/deprovisioning.
 - Metrics and health integration.
 
+## M7 — Network identity and vhosts
+
+- Managed VHOST/vanity-host pool; users never select arbitrary bind addresses.
+- First-class IPv4 and IPv6 support, including administratively delegated IPv6 pools/prefixes.
+- Per-account VHOST assignment, revocation and default selection.
+- Separate server/service bind identity from IRC-network cloaks/vanity hosts.
+- Validate address ownership, local availability and DNS policy before assignment.
+- Capability-gated user commands for list/show/request/set-default.
+- Administrative assign/revoke/pool management with audit logging.
+- Apply approved identities to supported bouncers, bots and persistent IRC clients without shell escape.
+- VHOST-aware quotas, reconciliation, health checks and qualification tests.
+- Keep the model suitable for later shells.no plan/tier and custom-host integration.
+
 ## Later
 
 - Additional IRC bouncers, bots and clients.
