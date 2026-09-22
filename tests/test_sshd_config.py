@@ -10,6 +10,7 @@ class SshdConfigTests(unittest.TestCase):
     X11Forwarding no
     PermitTTY yes
     PermitUserEnvironment no
+    PermitUserRC no
 """,s)
  def test_group_injection_rejected(self):
   for g in ("ircsh users","../ircsh","ircsh\nForceCommand /bin/sh",""):
