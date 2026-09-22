@@ -8,7 +8,7 @@ class ProvisioningTests(unittest.TestCase):
   self.assertEqual(0o700,p.modes()[p.ssh_dir]);self.assertEqual(0o600,p.modes()[p.authorized_keys])
  def test_restricted_ed25519_key_line(self):
   line=AccountProvisioning("alice").key_line(KEY)
-  self.assertTrue(line.startswith("no-agent-forwarding,no-port-forwarding,no-X11-forwarding,restrict "))
+  self.assertTrue(line.startswith("no-user-rc,no-agent-forwarding,no-port-forwarding,no-X11-forwarding,restrict "))
   self.assertIn(KEY,line)
  def test_rejects_legacy_or_injected_keys(self):
   p=AccountProvisioning("alice")
